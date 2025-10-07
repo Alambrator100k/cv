@@ -802,6 +802,75 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        
+        .size-presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .size-preset {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .size-preset:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .size-preset.active {
+            border-color: var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+        
+        .size-preset-name {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+        
+        .size-preset-dimensions {
+            font-size: 10px;
+            color: #ccc;
+        }
+        
+        .custom-size-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .custom-size-inputs input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        /* تنسيقات خاصة للتحميل */
+        .download-mode .section-controls,
+        .download-mode .item-controls,
+        .download-mode .editable:hover,
+        .download-mode .editable:focus {
+            display: none !important;
+        }
+        
+        .download-mode .editable {
+            border-color: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        .download-mode .cv-container {
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -868,7 +937,43 @@
                     <button id="load-web-image"><i class="fas fa-download"></i></button>
                 </div>
                 
-                <label>تغيير لون الإطار:</label>
+                <h4 style="margin: 15px 0 10px 0;"><i class="fas fa-crop-alt"></i> مقاسات الصورة</h4>
+                <div class="size-presets">
+                    <div class="size-preset active" data-width="120" data-height="120" data-shape="circle">
+                        <div class="size-preset-name">مربع</div>
+                        <div class="size-preset-dimensions">120×120</div>
+                    </div>
+                    <div class="size-preset" data-width="150" data-height="150" data-shape="circle">
+                        <div class="size-preset-name">مربع كبير</div>
+                        <div class="size-preset-dimensions">150×150</div>
+                    </div>
+                    <div class="size-preset" data-width="1080" data-height="1920" data-shape="rectangle">
+                        <div class="size-preset-name">تيك توك</div>
+                        <div class="size-preset-dimensions">1080×1920</div>
+                    </div>
+                    <div class="size-preset" data-width="1280" data-height="720" data-shape="rectangle">
+                        <div class="size-preset-name">يوتيوب</div>
+                        <div class="size-preset-dimensions">1280×720</div>
+                    </div>
+                    <div class="size-preset" data-width="1200" data-height="630" data-shape="rectangle">
+                        <div class="size-preset-name">فيسبوك</div>
+                        <div class="size-preset-dimensions">1200×630</div>
+                    </div>
+                    <div class="size-preset" data-width="1080" data-height="1080" data-shape="circle">
+                        <div class="size-preset-name">انستغرام</div>
+                        <div class="size-preset-dimensions">1080×1080</div>
+                    </div>
+                </div>
+                
+                <div class="custom-size-inputs">
+                    <input type="number" id="custom-width" placeholder="العرض" value="120">
+                    <input type="number" id="custom-height" placeholder="الارتفاع" value="120">
+                </div>
+                <button class="btn" id="apply-custom-size">
+                    <i class="fas fa-check"></i> تطبيق المقاس المخصص
+                </button>
+                
+                <label style="margin-top: 15px;">تغيير لون الإطار:</label>
                 <div class="color-picker" id="image-border-colors">
                     <div class="color-option active" style="background-color: #3498db;" data-color="#3498db"></div>
                     <div class="color-option" style="background-color: #e74c3c;" data-color="#e74c3c"></div>
@@ -876,9 +981,6 @@
                     <div class="color-option" style="background-color: #f39c12;" data-color="#f39c12"></div>
                     <div class="color-option" style="background-color: #9b59b6;" data-color="#9b59b6"></div>
                 </div>
-                <label>تغيير أبعاد الصورة:</label>
-                <input type="range" id="image-size" min="80" max="200" value="120">
-                <span id="image-size-value">120px</span>
             </div>
             
             <div class="toolbar-section">
@@ -1198,6 +1300,7 @@
         let currentDesign = '1';
         let currentArabicFont = 'Tajawal';
         let currentEnglishFont = 'SF Pro Display';
+        let currentImageShape = 'circle';
 
         // وظيفة عرض الإشعار
         function showNotification(message, type = 'success') {
@@ -1282,6 +1385,49 @@
             }
         });
 
+        // تغيير مقاسات الصورة المحددة مسبقاً
+        document.querySelectorAll('.size-preset').forEach(preset => {
+            preset.addEventListener('click', function() {
+                document.querySelectorAll('.size-preset').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                
+                const width = this.getAttribute('data-width');
+                const height = this.getAttribute('data-height');
+                const shape = this.getAttribute('data-shape');
+                
+                applyImageSize(width, height, shape);
+                showNotification(`تم تطبيق مقاس ${this.querySelector('.size-preset-name').textContent}`);
+            });
+        });
+
+        // تطبيق المق
+                // تطبيق المقاس المخصص
+        document.getElementById('apply-custom-size').addEventListener('click', function() {
+            const width = document.getElementById('custom-width').value;
+            const height = document.getElementById('custom-height').value;
+            
+            if (width && height) {
+                applyImageSize(width, height, 'custom');
+                showNotification('تم تطبيق المقاس المخصص بنجاح');
+            } else {
+                showNotification('الرجاء إدخال القيم المطلوبة', 'warning');
+            }
+        });
+
+        // تطبيق حجم الصورة
+        function applyImageSize(width, height, shape) {
+            profileImage.style.width = width + 'px';
+            profileImage.style.height = height + 'px';
+            
+            if (shape === 'circle') {
+                profileImage.style.borderRadius = '50%';
+            } else {
+                profileImage.style.borderRadius = '8px';
+            }
+            
+            currentImageShape = shape;
+        }
+
         // تحرير الصورة عند النقر عليها
         document.querySelector('.image-edit-overlay').addEventListener('click', function() {
             document.getElementById('image-upload').click();
@@ -1296,16 +1442,6 @@
                 const colorValue = this.getAttribute('data-color');
                 profileImage.style.borderColor = colorValue;
             });
-        });
-
-        // تغيير حجم الصورة
-        const imageSizeSlider = document.getElementById('image-size');
-        const imageSizeValue = document.getElementById('image-size-value');
-        imageSizeSlider.addEventListener('input', function() {
-            const size = this.value + 'px';
-            profileImage.style.width = size;
-            profileImage.style.height = size;
-            imageSizeValue.textContent = size;
         });
 
         // تغيير التصميم
@@ -1384,7 +1520,6 @@
         });
 
         // تحديث المعلومات الشخصية
-                // تحديث المعلومات الشخصية
         document.getElementById('full-name').addEventListener('input', function() {
             document.getElementById('preview-name').textContent = this.value || 'الاسم الكامل';
         });
@@ -1541,9 +1676,12 @@
             });
         }
 
-        // تحميل السيرة الذاتية كصورة
+        // تحميل السيرة الذاتية كصورة (بدون أزرار التعديل)
         function downloadCVAsImage(quality = 'hd') {
             showNotification('جاري تحضير السيرة الذاتية...');
+            
+            // إضافة كلاس خاص لإخفاء أزرار التعديل
+            cvPreview.classList.add('download-mode');
             
             const scale = quality === '4k' ? 4 : quality === 'hd' ? 2 : 1;
             
@@ -1557,22 +1695,38 @@
                     const clonedPreview = clonedDoc.getElementById('cv-preview');
                     clonedPreview.style.boxShadow = 'none';
                     clonedPreview.style.transform = 'scale(1)';
+                    
+                    // إخفاء أزرار التعديل في النسخة المستنسخة
+                    clonedPreview.classList.add('download-mode');
                 }
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `السيرة_الذاتية_${new Date().getTime()}.png`;
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
+                
+                // إزالة كلاس التحميل بعد الانتهاء
+                cvPreview.classList.remove('download-mode');
+                
                 showNotification('تم تحميل السيرة الذاتية بنجاح!');
             }).catch(err => {
                 console.error('Error generating image:', err);
+                cvPreview.classList.remove('download-mode');
                 showNotification('حدث خطأ أثناء التحميل', 'error');
             });
         }
 
         // تحميل السيرة الذاتية كPDF
         function downloadCVAsPDF() {
+            // إضافة كلاس خاص لإخفاء أزرار التعديل قبل الطباعة
+            cvPreview.classList.add('download-mode');
             window.print();
+            
+            // إزالة كلاس التحميل بعد الطباعة
+            setTimeout(() => {
+                cvPreview.classList.remove('download-mode');
+            }, 1000);
+            
             showNotification('جاري تحضير ملف PDF...');
         }
 
@@ -1854,4 +2008,4 @@
         };
     </script>
 </body>
-  </html>
+</html>
